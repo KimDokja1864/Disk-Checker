@@ -72,6 +72,16 @@ window.ASSETS = {
      Всё непрозрачное закрывает персонажей. Персонаж стоит за столом.
      null = встроенный простой деревянный стол.                         */
   desk: "assets/layers/3_desk.png",
+  /* Тот же стол, но с тенью от человека. Показывается, когда у посетителя
+     есть тень (обычные люди). Абсолют без тени получает обычный desk.
+     Размер и положение вещей должны совпадать с desk, меняется только тень.
+     null = тень нарисует сама игра.                                      */
+  deskShadow: null,
+  /* Тень на столе рисует игра. Подгонка под ваш стол:
+     shadowTop      где тень начинается, % высоты кадра (дальний край стола)
+     shadowOpacity  насколько тёмная тень, % (0–100)                      */
+  shadowTop: 66,
+  shadowOpacity: 80,
   deskRatio: null,                  // ширина/высота картинки. null = игра узнает сама
 
   /* Подгонка персонажей под ваш стол и фон */
@@ -98,18 +108,18 @@ window.ASSETS = {
                  справа. Нет файла: игра покажет силуэт с первой буквой.
                  Можно несколько эмоций: имя: { default: "...", angry: "..." }
                  В диалоге: "Орлова [angry]: текст".                     */
-vn: {
-  bg: {
-    default: "assets/ui/room.jpg",
-    fff:     "assets/vn/street2.jpg",
+  vn: {
+    bg: {
+      default: "assets/ui/room.jpg",            // фон, если у сцены не указан bg
+      // fff:  "assets/vn/street2.jpg",         // свой фон: в dialogs.js пишите bg: "fff"
+    },
+    characters: {
+      // "Никита":        "assets/vn/nikita.png",
+      // "Орлова":        { default: "assets/vn/orlova.png", angry: "assets/vn/orlova_angry.png" },
+      // "Администратор": "assets/vn/admin.png",
+      // "Антон":         "assets/vn/anton.png",
+    }
   },
-  characters: {
-    "Никита":        "assets/vn/nikita.png",
-    "Орлова":        "assets/vn/orlova.png",
-    "Администратор": "assets/vn/admin.png",
-    "Антон":         "assets/vn/anton.png",
-  }
-},
 
   /* ===== ЗВУКИ =========================================================
      null = игра синтезирует звук сама. Файл (mp3, ogg, wav) заменяет его.
