@@ -1,0 +1,1 @@
+Положите сюда PNG персонажей и впишите каждого в список npcs в assets.js (file, gender, age).
