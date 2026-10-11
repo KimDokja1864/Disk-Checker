@@ -108,18 +108,18 @@ window.ASSETS = {
                  справа. Нет файла: игра покажет силуэт с первой буквой.
                  Можно несколько эмоций: имя: { default: "...", angry: "..." }
                  В диалоге: "Орлова [angry]: текст".                     */
-  vn: {
-    bg: {
-      default: "assets/ui/room.jpg",            // фон, если у сцены не указан bg
-      // fff:  "assets/vn/street2.jpg",         // свой фон: в dialogs.js пишите bg: "fff"
-    },
-    characters: {
-      // "Никита":        "assets/vn/nikita.png",
-      // "Орлова":        { default: "assets/vn/orlova.png", angry: "assets/vn/orlova_angry.png" },
-      // "Администратор": "assets/vn/admin.png",
-      // "Антон":         "assets/vn/anton.png",
-    }
+vn: {
+  bg: {
+    default: "assets/ui/room.jpg",
+    street2: "assets/vn/street2.jpg",
   },
+  characters: {
+    "Никита":        "assets/vn/nikita.png",
+    "Орлова":        "assets/vn/orlova.png",
+    "Администратор": "assets/vn/admin.png",
+    "Антон":         "assets/vn/anton.png",
+  }
+},
 
   /* ===== ЗВУКИ =========================================================
      null = игра синтезирует звук сама. Файл (mp3, ogg, wav) заменяет его.
