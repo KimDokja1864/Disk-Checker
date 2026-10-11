@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Смена в «Дисководе»</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Oswald:wght@500;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: dark;
+  --ink:#0c110f; --panel:#141b18; --panel2:#1b2420; --line:#2b3832;
+  --lamp:#e9a73c; --cold:#cfe6e0; --muted:#8c9a92;
+  --blue:#1f3b66; --red:#b3322c; --green:#6fd08c;
+  --paper:#d8d1ba; --paper-ink:#221e16;
+  --head:"Oswald","Arial Narrow",Impact,sans-serif;
+  --body:"PT Sans","Segoe UI",Arial,sans-serif;
+  --mono:"IBM Plex Mono","Courier New",monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;min-height:100%;background:var(--ink);color:var(--cold);font-family:var(--body);font-size:17px;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+h1,h2,h3{font-family:var(--head);font-weight:700;margin:0;letter-spacing:.01em}
+p{margin:0 0 .8em}
+#app{max-width:1100px;margin:0 auto;padding:0 14px 28px}
+
+/* generic screens */
+.screen{min-height:calc(100vh - 20px);display:flex;flex-direction:column;justify-content:center;gap:18px;padding:22px 0}
+.hero{position:relative;border-radius:2px;overflow:hidden;border:1px solid var(--line);background:#000 center/cover no-repeat}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,12,10,.25),rgba(8,12,10,.92))}
+.hero .in{position:relative;z-index:1;padding:34px 26px 26px;min-height:360px;display:flex;flex-direction:column;justify-content:flex-end;gap:12px}
+.hero h1{font-size:clamp(40px,8vw,84px);line-height:.95;color:#fff}
+.hero .sub{font-family:var(--head);font-size:20px;color:var(--lamp);font-weight:500}
+.btn{background:var(--lamp);color:#1a1205;border:0;padding:12px 22px;font-family:var(--head);font-size:19px;font-weight:700;letter-spacing:.02em;border-radius:2px;align-self:flex-start}
+.btn:hover{background:#f4b852}
+.btn.ghost{background:transparent;color:var(--cold);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--lamp);color:var(--lamp)}
+.btn[disabled]{opacity:.35;cursor:not-allowed}
+.small{font-size:14px;color:var(--muted)}
+
+/* pager */
+.pager{background:#9bb08a;color:#1b2616;font-family:var(--mono);padding:16px 18px;border:3px solid #2a3322;border-radius:6px;box-shadow:inset 0 0 0 2px #7e9370;max-width:640px}
+.pager .hd{display:flex;justify-content:space-between;font-weight:600;font-size:13px;margin-bottom:8px;border-bottom:1px solid #5b6d50;padding-bottom:6px}
+.pager p{font-size:15px;line-height:1.45}
+.rules{background:var(--paper);color:var(--paper-ink);padding:16px 20px;max-width:640px;border-left:8px solid var(--red)}
+.rules h3{font-size:22px;margin-bottom:6px}
+.rules ul{margin:0;padding-left:20px}
+.rules li{margin:5px 0}
+.brief{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:860px){.brief{grid-template-columns:1fr 1fr;align-items:start}}
+.dayhead h2{font-size:clamp(34px,6vw,58px);line-height:1}
+.dayhead .date{color:var(--lamp);font-family:var(--head);font-size:19px;font-weight:500}
+
+/* shift */
+.hud{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-family:var(--head);font-size:17px;font-weight:500}
+.hud .clock{font-family:var(--mono);font-size:20px;color:var(--lamp);font-weight:600}
+.hud .sp{flex:1}
+.hud .bad{color:#ff8a80}
+.hud button{background:none;border:1px solid var(--line);padding:3px 12px;font-family:var(--head);font-size:16px}
+.hud button:hover{border-color:var(--lamp)}
+.stage{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+.desk{display:grid;grid-template-columns:1fr;gap:10px;align-content:start}
+@media(min-width:560px){.desk{grid-template-columns:1fr 1fr}.desk .wide{grid-column:1/-1}}
+.doc{background:var(--paper);color:var(--paper-ink);padding:10px 14px;font-size:15px;position:relative}
+.doc h4{margin:0 0 4px;font-family:var(--head);font-size:15px;font-weight:700;color:#6b5f3e}
+.doc.rc{font-family:var(--mono);font-size:13px;background:#e7e3d3}
+.doc.rc .ln{display:flex;justify-content:space-between;gap:10px}
+.doc.rc .tot{border-top:1px dashed #555;margin-top:4px;padding-top:4px;font-weight:600}
+.doc.cam{background:#0b100e;color:var(--green);font-family:var(--mono);border:1px solid #1f3a2a;font-size:14px}
+.doc.cam h4{color:#3f8a56}
+.doc.note{background:#232c27;color:var(--cold);border-left:4px solid var(--lamp)}
+.doc.note h4{color:var(--lamp)}
+.doc .insp{background:var(--blue);color:#fff;border:0;padding:6px 12px;font-family:var(--head);font-size:16px;margin-top:4px}
+.doc .insp:hover{background:#2a4f87}
+.doc ul{margin:0;padding-left:18px}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.acts button{padding:14px 8px;font-family:var(--head);font-size:20px;font-weight:700;border:0;border-radius:2px}
+.acts .pass{background:#2d6a43;color:#fff}.acts .stop{background:#8a5a1c;color:#fff}.acts .rep{background:var(--blue);color:#fff}
+.acts button:hover{filter:brightness(1.18)}
+.acts button[disabled]{opacity:.35;cursor:not-allowed;filter:none}
+.acts small{display:block;font-family:var(--body);font-weight:400;font-size:13px;opacity:.85}
+@media(max-width:560px){.acts{grid-template-columns:1fr}}
+.verdict{margin-top:14px;background:var(--panel2);border:1px solid var(--line);border-left:6px solid var(--muted);padding:14px 18px;display:grid;gap:10px}
+.verdict.ok{border-left-color:var(--green)}.verdict.bad{border-left-color:#ff6b5e}
+.verdict b{font-family:var(--head);font-size:20px}
+
+/* evening */
+.ledger{background:var(--paper);color:var(--paper-ink);padding:16px 20px;max-width:520px;font-family:var(--mono);font-size:14px}
+.ledger .ln{display:flex;justify-content:space-between;padding:2px 0}
+.ledger .tot{border-top:2px solid #000;margin-top:6px;padding-top:6px;font-weight:600}
+.choice{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 4px}
+.choice button{background:var(--panel2);border:1px solid var(--line);padding:10px 14px;font-family:var(--head);font-size:17px;text-align:left}
+.choice button.on{border-color:var(--lamp);background:#2a2415}
+.choice button[disabled]{opacity:.35;cursor:not-allowed}
+.news{border-left:4px solid var(--blue);padding:4px 14px;color:var(--cold);max-width:640px}
+.inc{border-left:4px solid #ff6b5e;padding:4px 14px;max-width:640px}
+
+/* overlay */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:20px}
+.ov .box{max-width:560px;width:100%}
+.ov img{width:100%;display:block}
+.ov .x{position:sticky;top:0;float:right;background:var(--lamp);color:#1a1205;border:0;padding:6px 14px;font-family:var(--head);font-size:18px;font-weight:700;margin-bottom:8px}
+
+.end h2{font-size:clamp(34px,7vw,64px);line-height:1}
+.end .q{font-style:italic;border-left:3px solid var(--lamp);padding-left:14px;color:var(--cold);max-width:640px}
+@media(prefers-reduced-motion:no-preference){.booth svg{animation:hum 5s steps(1) infinite}@keyframes hum{0%,96%{opacity:1}97%{opacity:.86}98%{opacity:1}99%{opacity:.9}}}
+
+.dialog{margin-top:14px;background:var(--panel2);border:1px solid var(--line);border-left:6px solid var(--lamp);padding:14px 18px;display:grid;gap:10px}
+.dialog .say{font-size:18px}
+.dialog .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dialog .opts button{background:var(--blue);color:#fff;border:0;padding:12px 8px;font-family:var(--head);font-size:17px;font-weight:500;border-radius:2px}
+.dialog .opts button:hover{background:#2a4f87}
+@media(max-width:560px){.dialog .opts{grid-template-columns:1fr}}
+.doc.empty{background:#1b2420;color:var(--muted);border:1px dashed #3a4a43}
+.doc.empty h4{color:var(--muted)}
+.ask{background:transparent;color:var(--lamp);border:1px solid var(--lamp);padding:6px 12px;font-family:var(--head);font-size:16px;margin-top:2px}
+.ask:hover{background:var(--lamp);color:#1a1205}
+.art h4{margin:14px 0 4px}
+.art input[type=file]{font-size:14px;max-width:100%}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;min-height:30px}
+.th{position:relative;width:64px;height:84px;background:#222;border:1px solid #888}
+.th img{width:100%;height:100%;object-fit:contain;display:block}
+.th button{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:0;width:20px;height:20px;border-radius:10px;line-height:18px;padding:0;font-size:14px}
+.morn{display:grid;gap:8px;max-width:640px}
+.morn .strip{height:150px;background:center/cover;border:1px solid var(--line);filter:brightness(.8)}
+.morn p{margin:0}
+.free{font-family:var(--head);font-size:18px;color:var(--lamp)}
+
+.stage{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+@media(min-width:900px){.stage{grid-template-columns:minmax(300px,.9fr) 1.1fr}}
+.booth{position:relative;aspect-ratio:var(--ar,.8);max-height:80vh;width:100%;border:1px solid var(--line);background:#000;overflow:hidden}
+.booth .bgimg{position:absolute;inset:0;background:center/cover;filter:brightness(.55) saturate(.9);transform:scale(1.04)}
+.booth .bgimg.custom{filter:none;transform:none}
+.booth .chars{position:absolute;inset:0;transform:translateY(calc(var(--cy,0)*1%)) scale(var(--cs,1));transform-origin:50% 100%}
+.booth .chars svg{width:100%;height:100%;display:block}
+.booth .fg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.booth .fgdesk{position:absolute;left:0;right:0;bottom:0;height:14%;background:linear-gradient(#5a4731 0 5px,#33281c 5px 100%);border-top:2px solid #8a7452;box-shadow:0 -12px 26px rgba(0,0,0,.55)}
+.booth .scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);pointer-events:none}
+.plate{position:absolute;left:0;right:0;top:0;background:rgba(8,12,10,.82);padding:6px 14px;font-family:var(--head);font-size:19px;display:flex;justify-content:space-between;gap:10px}
+.plate .q{color:var(--muted);font-size:15px;align-self:center;font-weight:500}
+.ov .box.wide{max-width:820px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tabs button{background:var(--panel2);border:1px solid var(--line);padding:6px 14px;font-family:var(--head);font-size:17px}
+.tabs button.on{background:var(--lamp);color:#1a1205;border-color:var(--lamp)}
+.ws{background:var(--paper);color:var(--paper-ink);padding:16px 20px}
+.ws h3{font-size:24px;margin-bottom:6px}.ws h4{margin:14px 0 4px;font-family:var(--head);font-size:17px}
+.ws input[type=file]{font-size:14px;max-width:100%}
+.ws textarea,.ws select{width:100%;font:inherit;font-size:15px;padding:6px 8px;background:#f1edde;color:#221e16;border:1px solid #8a7e5e}
+.ws textarea{min-height:90px;font-family:var(--mono);font-size:13px}
+.ws .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ws label{display:block;font-size:14px;margin-top:6px}
+.ws input[type=range]{width:100%}
+.ws .scn{border:1px solid #8a7e5e;padding:8px 10px;margin:8px 0;background:#e7e3d3}
+.ws .mini{background:var(--blue);color:#fff;border:0;padding:5px 12px;font-family:var(--head);font-size:15px;margin:4px 6px 0 0}
+.ws .mini.red{background:var(--red)}
+.ws .prev{max-width:300px;margin:8px 0}
+.scene{background:var(--panel2);border-left:6px solid var(--lamp);padding:22px 26px;max-width:680px;display:grid;gap:10px}
+.scene .who{font-family:var(--head);font-size:24px;color:var(--lamp)}
+.scene .txt{font-size:20px;line-height:1.5}
+.doc.bill{background:#cfd8c0;color:#1d2a18;border:2px solid #5d7050;font-size:14px}
+.doc.bill h4{color:#3d5230}
+.pd{font-size:14px;line-height:1.35}
+.pd b{font-family:var(--head);font-size:17px;letter-spacing:.03em}
+.doc.pdoc{background:#e4dcc0}
+.gate{color:#ffb07a;font-size:15px;margin-top:10px}
+.memo h4{margin:14px 0 4px;font-family:var(--head);font-size:18px}
+.memo ul{margin:0;padding-left:20px}
+.memo li{margin:3px 0}
+.lock{opacity:.5}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="assets.js"></script>
+<script src="dialogs.js"></script>
+<script>
+const A=window.ASSETS||{};
+const enc=p=>p?encodeURI(p):p;
+const IMG={ROOM:enc((A.ui||{}).room),FOOD:enc((A.ui||{}).food),POSTER:enc((A.ui||{}).poster),STREET:enc((A.ui||{}).street),MEMORIAL:enc((A.ui||{}).memorial)};
+const $=s=>document.querySelector(s), app=$('#app');
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* =====================================================
+   НАСТРОЙКИ ИГРЫ (дни считаются с 1; массивы идут по дням 1–5)
+   ===================================================== */
+const CONFIG={
+  unlock:{cam:2,doc:3,money:4},      // с какого дня доступно
+  mandatory:{doc:3,money:4},         // с какого дня без этого нельзя решать
+  bigCheck:1000,                     // чек больше этой суммы: проверять деньги
+  freeErrors:[2,2,1,1,0],            // бесплатные нарушения по дням
+  penalty:[3,5,8,12,18],             // штраф за каждое лишнее нарушение, руб.
+  incident:[0,10,15,20,25],          // снятая премия, если пропущен Абсолют
+  wage:[50,50,55,55,60],
+  warnOver:[99,99,99,3,2],           // сколько лишних нарушений даёт выговор (−1 доверие)
+  rent:25,
+  clockStep:12                       // минут на каждого посетителя
+};
+
+/* ---------- настройки из assets.js ---------- */
+const DB={init(){return Promise.resolve()},get(k){try{return Promise.resolve(JSON.parse(localStorage.getItem('dk_'+k)))}catch(e){return Promise.resolve(null)}},set(k,v){try{localStorage.setItem('dk_'+k,JSON.stringify(v));return Promise.resolve(true)}catch(e){return Promise.resolve(false)}}};
+const ART={bg:enc(A.background)||null,view:enc(A.desk)||null,viewRatio:A.deskRatio||0,charScale:A.charScale||100,charY:A.charY||0,pShadows:2};
+const NPCS=(A.npcs||[]).filter(n=>n&&n.file&&(n.gender==='m'||n.gender==='f')&&typeof n.age==='number');
+const SKIPPED=(A.npcs||[]).length-NPCS.length;
+let ANTON=A.anton&&A.anton.file?A.anton:null;
+let SOUNDS={};Object.entries(A.sounds||{}).forEach(([k,v])=>{if(v)SOUNDS[k]=enc(v)});
+let PROBLEMS=[];
+const DEFAULT_DIALOGS=[
+ {day:1,cond:'always',text:"Администратор: Ну что, первый день. Без кражи, считай, повезло.\nНикита: Я даже не успел понять, где у вас что лежит.\nАдминистратор: Поймёшь. Тут все в конце концов понимают."},
+ {day:2,cond:'caught',text:"Орлова: Вижу отметку. Неплохо.\nНикита: Он даже не сопротивлялся.\nОрлова: Они не сопротивляются. Они идут по маршруту."},
+ {day:2,cond:'missed',text:"Орлова: В 19:12 у стенда был инцидент.\nНикита: Я не успел.\nОрлова: Не успел или не заметил?"},
+ {day:0,cond:'innocent',text:"Орлова: Чисто. Бывает.\nНикита: Бывает?\nОрлова: Спокойной ночи, Никита."},
+ {day:0,cond:'anton_stop',text:"Антон: Мне он не нужен.\nНикита: Тогда зачем брал?\nАнтон: Хотелось, чтобы хоть что-то хотелось."},
+ {day:0,cond:'anton_pass',text:"Никита: Я его отпустил.\nНикита: Зачем я его отпустил?"}
+];
+let DIALOGS=(window.DIALOGS_DATA||DEFAULT_DIALOGS).map(x=>({...x}));
+const CONDS=[['always','Всегда'],['caught','Поймал Абсолюта'],['missed','Пропустил Абсолюта'],['errors','Были штрафы'],['noerr','Ни одного нарушения'],['innocent','Сдал невиновного'],['anton_stop','Остановил Антона'],['anton_pass','Пропустил Антона']];
+const SND_SLOTS=[['click','Клик кнопки'],['paper','Документ, чек'],['zip','Сумка'],['stamp','Печать, «Остановить»'],['ding','Верно, касса'],['buzz','Ошибка'],['ok','Спор разрешён'],['pager','Пейджер'],['door','Новый посетитель'],['blip','Камера'],['ambient','Фон: торговый центр (зацикленный)']];
+
+/* ---------- звук ---------- */
+const Snd=(()=>{
+ let ctx=null,master=null,muted=false,custom={},amb=null,ambKind='off';
+ function init(){if(ctx)return true;try{const AC=window.AudioContext||window.webkitAudioContext;ctx=new AC();master=ctx.createGain();master.gain.value=.55;master.connect(ctx.destination);return true}catch(e){ctx=null;return false}}
+ function osc(f,d,type,v,t0,f2){const t=ctx.currentTime+(t0||0);const o=ctx.createOscillator(),g=ctx.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(master);o.start(t);o.stop(t+d+.03)}
+ function noise(d,v,hp,lp,t0){const t=ctx.currentTime+(t0||0);const n=Math.max(1,Math.floor(ctx.sampleRate*d));const b=ctx.createBuffer(1,n,ctx.sampleRate);const a=b.getChannelData(0);for(let i=0;i<n;i++)a[i]=Math.random()*2-1;const s=ctx.createBufferSource();s.buffer=b;const f1=ctx.createBiquadFilter();f1.type='highpass';f1.frequency.value=hp||200;const f2=ctx.createBiquadFilter();f2.type='lowpass';f2.frequency.value=lp||6000;const g=ctx.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(f1);f1.connect(f2);f2.connect(g);g.connect(master);s.start(t)}
+ const lib={
+  click:()=>osc(1500,.03,'square',.04),
+  paper:()=>{noise(.09,.2,1800,9000);noise(.07,.13,1200,7000,.1)},
+  zip:()=>noise(.24,.16,900,5000),
+  stamp:()=>{osc(140,.15,'sine',.5,0,50);noise(.05,.28,200,2500)},
+  ding:()=>{osc(1568,.5,'sine',.16);osc(2093,.6,'sine',.11,.07)},
+  buzz:()=>{osc(110,.3,'sawtooth',.18);osc(117,.3,'sawtooth',.14)},
+  ok:()=>{osc(660,.12,'triangle',.18);osc(990,.24,'triangle',.18,.1)},
+  pager:()=>{[0,.18,.36].forEach(t=>osc(2400,.1,'square',.08,t))},
+  door:()=>{osc(660,.35,'sine',.11);osc(880,.45,'sine',.09,.18)},
+  blip:()=>{osc(900,.05,'square',.04);osc(1200,.05,'square',.04,.06)}
+ };
+ function play(name){
+  if(muted)return;
+  if(custom[name]){try{const a=new Audio(custom[name]);a.volume=.8;a.play().catch(()=>{})}catch(e){}return}
+  if(!init())return;if(ctx.state==='suspended')ctx.resume();
+  try{lib[name]&&lib[name]()}catch(e){}
+ }
+ function stopAmb(){if(amb){try{amb.stop&&amb.stop();amb.el&&amb.el.pause()}catch(e){}amb=null}}
+ function ambient(kind){
+  ambKind=kind;stopAmb();if(muted||kind==='off')return;
+  if(custom.ambient&&kind==='mall'){try{const a=new Audio(custom.ambient);a.loop=true;a.volume=.45;a.play().catch(()=>{});amb={el:a}}catch(e){}return}
+  if(!init())return;if(ctx.state==='suspended')ctx.resume();
+  const mall=kind==='mall';
+  const n=ctx.sampleRate*2,b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+  const s=ctx.createBufferSource();s.buffer=b;s.loop=true;
+  const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=mall?520:180;
+  const g=ctx.createGain();g.gain.value=mall?.06:.025;s.connect(lp);lp.connect(g);g.connect(master);s.start();
+  const o1=ctx.createOscillator(),o2=ctx.createOscillator(),og=ctx.createGain();
+  o1.type=o2.type='sine';o1.frequency.value=mall?100:50;o2.frequency.value=mall?100.8:50.4;og.gain.value=.02;
+  o1.connect(og);o2.connect(og);og.connect(master);o1.start();o2.start();
+  const stops=[()=>s.stop(),()=>o1.stop(),()=>o2.stop()];
+  if(mall){const p1=ctx.createOscillator(),p2=ctx.createOscillator(),pg=ctx.createGain(),lf=ctx.createOscillator(),lg=ctx.createGain();
+    p1.frequency.value=220;p2.frequency.value=277.2;p1.type=p2.type='sine';pg.gain.value=.012;lf.frequency.value=.12;lg.gain.value=.01;
+    lf.connect(lg);lg.connect(pg.gain);p1.connect(pg);p2.connect(pg);pg.connect(master);p1.start();p2.start();lf.start();
+    stops.push(()=>p1.stop(),()=>p2.stop(),()=>lf.stop())}
+  amb={stop(){stops.forEach(f=>{try{f()}catch(e){}})}};
+ }
+ return{play,ambient,setCustom(c){custom=c||{}},get muted(){return muted},
+  toggle(){muted=!muted;if(muted)stopAmb();else ambient(ambKind);return muted},setMuted(m){muted=!!m}};
+})();
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('button'))Snd.play('click')});
+
+/* ---------- random ---------- */
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const pickR=(r,a)=>a[Math.floor(r()*a.length)];
+const shuffle=(r,a)=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const fmt=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const p2=n=>String(n).padStart(2,'0');
+
+/* ---------- данные ---------- */
+const FN_M=["Дмитрий","Сергей","Олег","Игорь","Максим","Артём","Кирилл","Павел","Андрей","Роман","Виктор","Глеб"];
+const FN_F=["Ольга","Наталья","Юлия","Ирина","Анна","Екатерина","Светлана","Марина","Татьяна","Вера"];
+const SN=[["Орлов","Орлова"],["Крылов","Крылова"],["Зайцев","Зайцева"],["Беляев","Беляева"],["Тихонов","Тихонова"],["Гусев","Гусева"],["Фомин","Фомина"],["Лебедев","Лебедева"],["Серов","Серова"],["Комаров","Комарова"],["Власов","Власова"],["Рябов","Рябова"]];
+const COATS=["#3b4a5a","#5a3b3b","#2f3d34","#6b6252","#26282b","#4a3f5e","#58503a"];
+const HAIRS=["#16110d","#4a3320","#8a6a3a","#b9b2a2","#2b2420"];
+const SKINS=["#e0b99a","#d2a07f","#efcfb3","#c58f6e"];
+const HL2={t:"Half-Life 2 (2 DVD)",r:18,p:890};
+const ITEMS=[
+ {t:"Need for Speed Underground 2",r:12,p:490},{t:"The Sims 2",r:12,p:520},{t:"Pro Evolution Soccer 4",r:0,p:390},
+ {t:"Warcraft III: The Frozen Throne",r:12,p:430},{t:"Counter-Strike: Condition Zero",r:16,p:350},{t:"FIFA 2005",r:0,p:450},
+ {t:"CD: «Ленинград» — Дачники",r:0,p:190},{t:"CD: Земфира — Вендетта",r:0,p:210},{t:"CD: Aphex Twin — Drukqs",r:0,p:360},
+ {t:"CD: Ария — Крещение огнём",r:0,p:200},{t:"CD: DJ Smash — Moscow Never Sleeps",r:0,p:180},{t:"CD: Squarepusher — Ultravisitor",r:0,p:340},
+ {t:"Age of Mythology",r:12,p:300},{t:"Prince of Persia: Warrior Within",r:16,p:420},{t:"CD-R болванки, 10 шт.",r:0,p:120}
+];
+const R18=[HL2,{t:"Doom 3",r:18,p:640},{t:"GTA: San Andreas",r:18,p:790},{t:"Hitman: Contracts",r:18,p:560}];
+const SERIES_ABS={
+ 4:[{t:"Resident Evil",r:18,p:350},{t:"Resident Evil 2",r:18,p:350},{t:"Resident Evil 3: Nemesis",r:18,p:350}],
+ 5:[{t:"Silent Hill",r:18,p:350},{t:"Silent Hill 2",r:18,p:350},{t:"Silent Hill 3",r:18,p:350}]
+};
+const SERIES_FAN=[{t:"Max Payne",r:16,p:300},{t:"Max Payne 2",r:16,p:420}];
+const NOTES=["Торопится, смотрит на часы.","Листает рекламный буклет.","Спорит с продавцом о скидке.","Говорит по Nokia 6610.","Оставляет мокрые следы на кафеле.","Берёт подарок на Новый год.","Греет руки о стаканчик из фуд-корта.","Что-то напевает.","Уже второй раз возвращается за сдачей."];
+const NOSCAN="Идёт к кассе по прямой и не сворачивает. Ценники не читает. Упавший стеллаж не заметил.";
+
+/* споры: гордый -> вежливо, наглый -> твёрдо, пугливый -> успокоить */
+const TEMPER={
+ proud:{right:'polite',
+  bag:{start:["«Вы меня за вора держите? Я тут каждый месяц покупаю!» Он выпрямляется и ждёт извинений.","«Я? Проверять? Вы хоть знаете, с кем разговариваете?» Подбородок вздёрнут."],ok:"«Ладно. Мне скрывать нечего. Смотрите»."},
+  doc:{start:["«Документы? Я что, подозреваемый? Я взрослый человек!»","«Вы вообще имеете право? Я не школьник, чтобы мне документы совать!»"],ok:"«Вот. Только без намёков, пожалуйста»."},
+  wrong:["Он оскорблённо отворачивается: «С такими манерами я и говорить не стану».","«Ну всё. Теперь вообще ничего не покажу». Он скрещивает руки."]},
+ aggr:{right:'firm',
+  bag:{start:["«А ты кто такой, чтоб в мою сумку лезть? Попробуй сам открой!» Он делает шаг вперёд.","«Отвали, охрана». Он прижимает сумку к боку и смотрит исподлобья."],ok:"«Да пожалуйста. Подавись»."},
+  doc:{start:["«Паспорт тебе ещё? А больше ничего не надо?» Он смотрит сверху вниз.","«Сам себе документы покажи». Он давит плечом."],ok:"«На. Читай внимательно»."},
+  wrong:["Он смеётся тебе в лицо и отступает на шаг.","«Шутишь, что ли?» Он толкает тебя плечом, проходя вперёд."]},
+ nerv:{right:'soothe',
+  bag:{start:["«Я... там личное! Не надо! Я просто...» Пальцы белеют на ремне. Он озирается.","«Что вам нужно? Я ничего не делал». Голос ломается на последних словах."],ok:"«Спасибо... извини. Вот, смотри»."},
+  doc:{start:["«Документы... а зачем? Они дома, то есть... нет, вот они...» Он шарит по карманам.","«Я... можно позже? Я спешу, меня ждут». Он потеет, хотя в атриуме прохладно."],ok:"«Вот. Простите, я правда не хотел задерживать»."},
+  wrong:["Он вздрагивает, будто ты ударил его. Губы дрожат.","Он отступает и смотрит на выход."]}
+};
+const APPROACH=[["polite","Вежливо объяснить правила"],["firm","Твёрдо потребовать"],["soothe","Успокоить и пошутить"]];
+const CALM_BAG=["Молча открывает сумку.","«Конечно, пожалуйста», кладёт сумку на стойку.","Пожимает плечами и открывает молнию.","Показывает, не отрываясь от телефона."];
+const CALM_DOC=["Молча протягивает документ.","«Держите», кладёт документ на стойку.","Достаёт документ из внутреннего кармана.","Показывает документ, не глядя на тебя."];
+
+const DAYS=[
+{n:1,date:"Понедельник, 13 декабря 2004",title:"Xtal · Хрусталь",
+ pager:["Никита. Для остальных ты охранник в «Дисководе». Для меня — глаза на третьем этаже.","Сегодня Абсолюта не ищем. Научись стоять так, чтобы на тебя не смотрели. Пока тебе доступны только чек и сумка: допуск к остальному у тебя ещё не оформлен."],
+ rules:["Чек и сумку сам не покажут: проси. Просьба стоит время.","Всё, что в сумке, должно быть в чеке. Лишнее — остановить.","Игры 18+ продаются с 18 лет. Документов пока нет, смотри на человека: «на вид».","Сумку просят вежливо, но не все любят вежливость. Гордых успокаивает вежливость, наглых — твёрдость, пугливых — мягкость.","Пейджер ВОЗР сегодня не трогай."],
+ plan:["normal","normal","normal","normal","thief","thief","underage","underage"],
+ tv:"По ТВ: предновогодняя распродажа. Горожане берут кредиты на подарки. Диктор улыбается слишком долго.",inc:""},
+{n:2,date:"Вторник, 14 декабря 2004",title:"Flim · Плёнка",
+ pager:["Вчера вечером в атриуме человек четыре часа простоял у стенда с демо-версией. Не моргал. Камеры его не взяли.","Подозреваем Абсолюта Прохождения. Он убеждён, что у любой ситуации есть единственный правильный маршрут, а люди вокруг — фон. Живёт в чужом теле. Следи за тенями на полу. Тебе открыли доступ к записи камеры у входа."],
+ rules:["Под лампами атриума у человека две тени. Одна тень — это уже не человек.","Теперь можно перемотать запись камеры у входа.","Вызов ВОЗР — два за смену. Ошибка — не оплошность, а чья-то жизнь."],
+ plan:["normal","normal","normal","thief","thief","underage","abs","normal","normal"],
+ tv:"На экране человек в тёмном пиджаке поднимает ладонь, будто просит тишины. Ты переключаешь канал. Он на каждом.",
+ inc:"В 19:12 у стенда с демо-версиями неподвижно простоял человек. Двадцать посетителей не смогли потом вспомнить, как вышли из магазина."},
+{n:3,date:"Среда, 15 декабря 2004",title:"Nannou · Нанну",
+ pager:["Он понял, что мы смотрим на тени. Наш человек на входе видел две. Значит, Абсолют стал аккуратнее. Но не умнее: он торопится. Чек у него готов раньше, чем он подошёл к кассе.","Начальство ввело правило: без проверки документа решение не принимается. Среди документов уже находили фальшивые. Памятка в твоём шкафчике."],
+ rules:["Документ обязателен: без него «Пропустить», «Остановить» и пейджер не работают.","Читай документ по памятке: у подделок всегда есть дефект.","Чек не может быть пробит раньше, чем человек вошёл в магазин.","Один признак Абсолюта — не повод. Нужны два."],
+ plan:["normal","normal","normal","thief","thief","underage","abs","decoyShadow","forger","normal"],
+ tv:"Канал 5 показывает метель. Через час метель повторяется кадр в кадр.",
+ inc:"В 18:40 на третьем этаже десять минут горели все мониторы разом. Они показывали одного и того же человека. Он стоял в очереди в кассу."},
+{n:4,date:"Четверг, 16 декабря 2004",title:"Ageispolis · Агеисполис",
+ pager:["Время он больше не путает. Зато начал покупать так, как проходят игры: часть за частью, без выбора, глядя только вперёд. Но любителей серий в декабре — половина города.","Новое от начальства: кассир выкладывает крупные купюры в лоток охраны. Если чек больше 1000 р., сначала проверь деньги. Фальшивки пошли по центру."],
+ rules:["Чек больше 1000 р.: проверь купюру в лотке, иначе решение не принять.","Все части одной серии подряд — признак Абсолюта.","Не читает ценники, не реагирует на происходящее — признак.","Два признака — звони. Один — просто человек."],
+ plan:["normal","normal","normal","thief","underage","abs","decoySeries","decoyTime","forger","counterfeit","normal"],
+ tv:"Реклама телефонов. Реклама телефонов. Реклама телефонов. Ты не можешь вспомнить ни одного сегодняшнего сюжета.",
+ inc:"В 19:05 на эскалаторе все двигались в одну сторону и в одном темпе. Посетитель, шедший против, был сбит с ног. Никто не обернулся."},
+{n:5,date:"Пятница, 17 декабря 2004",title:"Ventolin · Вентолин",
+ pager:["Последний день акции. Центр забит. Если он ударит сегодня — получим Вашингтон в миниатюре. Ты знаешь, что такое ожидание, когда на него отвечают.","Мне нужен результат. Любой. Штрафы сегодня вдвое строже: сверху требуют. Решение принимаю не я, а протокол."],
+ rules:["Тени. Время чека. Серия подряд. Походка по маршруту.","Документ и деньги — обязательно.","Два признака — звони. Один — просто человек.","Бесплатных нарушений почти нет. Каждое стоит дорого."],
+ plan:["normal","thief","underage","abs","decoyShadow","decoySeries","decoyTime","decoyNoscan","forger","counterfeit"],
+ tv:"Телевизор молчит. В тёмном экране отражается комната с одной лампой.",
+ inc:"В 19:30 в атриуме все остановились. Не было ни тревоги, ни объявления. Они ждали. Двенадцать минут."}
+];
+const ABS_CFG={2:{shadows:1,noscan:true,age:63,range:[55,95]},3:{time:true,noscan:true,age:22,range:[18,28]},4:{series:true,noscan:true,age:35,range:[28,45]},5:{time:true,series:true,age:41,range:[35,55]}};
+
+/* ---------- документы ---------- */
+function mkDoc(r,c,fake,age){
+  let type;
+  if(age<14)type='Школьный дневник';
+  else if(age<18)type=pickR(r,['Паспорт','Школьный дневник']);
+  else type=(age<=26&&r()<.3)?'Студенческий билет':'Паспорт';
+  if(fake)type=(c.role==='forger'&&age<=26&&r()<.5)?'Студенческий билет':'Паспорт';
+  const by=2004-age,bm=1+Math.floor(r()*11),bd=1+Math.floor(r()*27);
+  const d={type,name:c.name,by,bm,bd,age,defects:[],stamp:type==='Паспорт'?'ГУВД Санкт-Петербурга, оттиск чёткий':'печать деканата, оттиск чёткий',
+    title:type==='Паспорт'?'ПАСПОРТ РФ':type==='Студенческий билет'?'СТУДЕНЧЕСКИЙ БИЛЕТ':'ДНЕВНИК',
+    school:'Школа № '+(100+Math.floor(r()*400)),cls:(5+Math.floor(r()*6))+pickR(r,['А','Б','В']),
+    num:'40 0'+(1+Math.floor(r()*4))+' № '+(100000+Math.floor(r()*899999)),until:'06.2005',im:1+Math.floor(r()*11),id:1+Math.floor(r()*27),iy:0};
+  if(type==='Паспорт'){let iy=by+14;if(age>=20&&r()<.4)iy=Math.min(2004,by+20);d.iy=iy}
+  if(fake){
+    const pool=type==='Паспорт'?['issued','stamp','typo']:['expired','stamp','typo'];
+    const n=1+(r()<.4?1:0);d.defects=shuffle(r,pool).slice(0,n);
+    if(d.defects.includes('issued'))d.iy=by+8+Math.floor(r()*4);
+    if(d.defects.includes('stamp'))d.stamp='оттиск смазан, прочесть нельзя';
+    if(d.defects.includes('typo'))d.title=type==='Паспорт'?'ПАСПОРГ РФ':'СТУДЕНЧЕКИЙ БИЛЕТ';
+    if(d.defects.includes('expired'))d.until='06.2003';
+  }
+  return d;
+}
+function docHTML(d){
+  const bdate=`${p2(d.bd)}.${p2(d.bm)}.${d.by}`;
+  if(d.type==='Школьный дневник')return `<div class="pd"><b>${d.title}</b><div>Ученик: ${esc(d.name)}</div><div>${d.school}, ${d.cls} класс</div><div>Год рождения: ${d.by}</div><div>Возраст: <b>${d.age}</b></div><div>Печать: школа, оттиск чёткий</div></div>`;
+  if(d.type==='Студенческий билет')return `<div class="pd"><b>${d.title}</b><div>${esc(d.name)}</div><div>Дата рождения: ${bdate}</div><div>Возраст: <b>${d.age}</b></div><div>Действителен до: ${d.until}</div><div>Печать: ${d.stamp}</div></div>`;
+  return `<div class="pd"><b>${d.title}</b><div>${esc(d.name)}</div><div>Дата рождения: ${bdate}</div><div>Возраст: <b>${d.age}</b></div><div>Выдан: ${p2(d.id)}.${p2(d.im)}.${d.iy}</div><div>Серия, номер: ${d.num}</div><div>Печать: ${d.stamp}</div></div>`;
+}
+
+/* ---------- купюры ---------- */
+function mkBill(r,fake){
+  const nom=pickR(r,[1000,1000,500]);
+  const serial=pickR(r,['ХЛ','ЬЗ','АК','ТМ'])+' '+(1000000+Math.floor(r()*8999999));
+  const b={nom,top:serial,bottom:serial,wm:'виден портрет',thread:'прощупывается, поблёскивает',ink:'краска чёткая, не пачкает',defects:[]};
+  if(fake){
+    const pool=['serial','wm','thread','ink'];b.defects=shuffle(r,pool).slice(0,1+(r()<.45?1:0));
+    if(b.defects.includes('serial'))b.bottom=b.top.slice(0,-2)+String(10+Math.floor(r()*80));
+    if(b.defects.includes('wm'))b.wm='на просвет не виден';
+    if(b.defects.includes('thread'))b.thread='нарисована, не прощупывается';
+    if(b.defects.includes('ink'))b.ink='цвет блёклый, пачкает пальцы';
+  }
+  return b;
+}
+function bigBasket(r,lim){for(let k=0;k<40;k++){const a=shuffle(r,ITEMS.filter(i=>i.r<=lim)).slice(0,3);if(a.reduce((x,i)=>x+i.p,0)>CONFIG.bigCheck)return a}return ITEMS.slice(0,3)}
+
+/* ---------- посетители ---------- */
+function pickNpc(r,role,day,used){
+  let lo=18,hi=99;
+  if(role==='underage'){lo=12;hi=17}
+  else if(role==='normal'){lo=12}
+  else if(role==='abs'){[lo,hi]=ABS_CFG[day].range}
+  const ok=n=>(!n.only||n.only.includes(role));
+  let pool=NPCS.filter(n=>n.age>=lo&&n.age<=hi&&ok(n));
+  if(!pool.length&&role==='abs')pool=NPCS.filter(n=>n.age>=18&&ok(n));
+  const fresh=pool.filter(n=>!used.has(n.file));
+  const src=fresh.length?fresh:pool;
+  if(!src.length)return null;
+  const n=pickR(r,src);used.add(n.file);return n;
+}
+function mk(r,day,role,used){
+  const npc=role==='anton'?ANTON:pickNpc(r,role,day,used||new Set());
+  let female=r()<.42;
+  let age=18+Math.floor(r()*36);
+  if(role==='underage')age=12+Math.floor(r()*6);
+  if(role==='abs')age=ABS_CFG[day].age;
+  if(role==='anton')age=24;
+  if(npc){female=role==='anton'?false:npc.gender==='f';age=typeof npc.age==='number'?npc.age:age}
+  const c={role,female,age,
+    name:role==='anton'?"Антон Авдеев":(npc&&npc.name)?npc.name:(female?pickR(r,FN_F)+" "+pickR(r,SN)[1]:pickR(r,FN_M)+" "+pickR(r,SN)[0]),
+    coat:pickR(r,COATS),hair:pickR(r,HAIRS),skin:pickR(r,SKINS),
+    hat:r()<.4,hatc:pickR(r,["#2a3a50","#6b2f2f","#3c3c3c","#4a5a3a"]),scarf:r()<.55,scarfc:pickR(r,["#a33","#348","#c93","#888"]),
+    shadows:2,items:[],bag:[],note:pickR(r,NOTES),eo:10+Math.floor(r()*5),ro:3+Math.floor(r()*5),
+    timeBad:false,violation:null,sprite:null,total:0,doc:null,bill:null,
+    shown:{rc:false,cam:false},st:{doc:'closed',bag:'closed'},wr:{doc:0,bag:0},tp:{doc:'calm',bag:'calm'},tl:{doc:0,bag:0},
+    ol:{doc:'',bag:''},dk:null,react:'',moneyChecked:false,
+    calmBag:pickR(r,CALM_BAG),calmDoc:pickR(r,CALM_DOC)};
+  if(npc)c.sprite=enc(npc.file);
+  const plain=(role==='abs'||role==='anton');
+  const aBag=role==='thief'?.6:plain?0:.35;
+  const aDoc=(role==='forger'||role==='underage')?.55:plain?0:.3;
+  if(r()<aBag){c.tp.bag=pickR(r,['proud','aggr','nerv']);c.tl.bag=Math.floor(r()*2)}
+  if(r()<aDoc){c.tp.doc=pickR(r,['proud','aggr','nerv']);c.tl.doc=Math.floor(r()*2)}
+  const lim=age>=18?18:(age>=16?16:12);
+  const okItems=ITEMS.filter(i=>i.r<=lim);
+  const base=()=>{const n=1+Math.floor(r()*2);return shuffle(r,okItems).slice(0,n)};
+  let fakeDoc=false,shownAge=age,fakeBill=false;
+  switch(role){
+   case'normal':c.items=(day>=CONFIG.unlock.money&&r()<.3)?bigBasket(r,lim):base();break;
+   case'thief':{c.items=base();const extra=shuffle(r,ITEMS.filter(i=>!c.items.includes(i)&&i.r<=lim))[0];c.bag=c.items.concat([extra]);c.violation='theft';c.note="Рюкзак тяжелее, чем должен быть. "+c.note;break}
+   case'underage':c.items=[pickR(r,R18)].concat(r()<.5?base().slice(0,1):[]);c.violation='underage';
+     if(age>=14&&r()<.45){fakeDoc=true;shownAge=18+Math.floor(r()*9)}break;
+   case'forger':c.items=base();c.violation='forged';fakeDoc=true;c.note="Нервно поправляет воротник. "+c.note;break;
+   case'counterfeit':c.items=bigBasket(r,18);c.violation='counterfeit';fakeBill=true;break;
+   case'abs':{const a=ABS_CFG[day];c.items=a.series?SERIES_ABS[day].slice():base();
+     if(a.shadows!==undefined)c.shadows=a.shadows;if(a.time)c.timeBad=true;if(a.noscan)c.note=NOSCAN;
+     c.calmBag="Молча кладёт сумку на стойку и открывает. Не задаёт вопросов, не смотрит на тебя.";
+     c.calmDoc="Молча протягивает документ. Рука двигается ровно, как по рельсам.";break}
+   case'decoyShadow':c.items=base();c.shadows=1;c.note="Стоит у колонны, вторая лампа перекрыта. Долго выбирает диски, сравнивает цены.";break;
+   case'decoySeries':c.items=SERIES_FAN.slice();c.note="Обсуждает с другом сюжет и спорит, какая часть лучше. Читает ценники.";break;
+   case'decoyTime':c.items=base();c.timeBad=true;c.note="Чек из соседнего отдела сети: пробил там, пока вы не видели, и вернулся за сдачей. Нервничает.";break;
+   case'decoyNoscan':c.items=base();c.note=NOSCAN+" На груди бейдж «Электроника, склад».";break;
+   case'anton':c.items=[];c.bag=[HL2,{t:"Шаурма куриная в лаваше"}];c.violation='theft';
+     c.note="Ничего не выбирает. Простоял двадцать минут у коробок Half-Life 2. Одна рука в кармане куртки. «Мне всё равно, я просто посмотреть».";
+     c.calmBag="Пожимает плечами и открывает куртку. Спорить ему не хочется.";c.calmDoc="Протягивает паспорт, не глядя. «Берите».";break;
+  }
+  if(!c.bag.length&&role!=='anton')c.bag=c.items.slice();
+  c.total=c.items.reduce((a,i)=>a+i.p,0);
+  c.docFake=fakeDoc;
+  c.doc=mkDoc(r,c,fakeDoc,shownAge);
+  if(c.total>CONFIG.bigCheck)c.bill=mkBill(r,fakeBill);
+  const ls=age>=18?3:1;c.look=Math.max(8,age+Math.floor(r()*(2*ls+1))-ls);
+  if(npc)c.look=(typeof npc.look==='number')?npc.look:(typeof npc.age==='number'?npc.age:age);
+  else if(fakeDoc&&role==='underage')c.look=age;
+  return c;
+}
+function buildQueue(day){
+  const d=DAYS[day-1],r=rng(S.seed+day*7919);
+  const plan=d.plan.slice();
+  if(day>=2&&r()<.7)plan.push('anton');
+  let q=shuffle(r,plan);
+  if(day>1){const i=q.indexOf('abs');if(i<2){const j=2+Math.floor(r()*(q.length-2));[q[i],q[j]]=[q[j],q[i]]}}
+  const used=new Set();
+  return q.map(role=>mk(r,day,role,used));
+}
+
+/* ---------- портрет и кабинка (слои) ---------- */
+function portrait(c,customBg){
+  const k=c.age<16?.82:1;
+  let sh='';
+  if(c.shadows>=1)sh+='<path d="M96 203 L108 203 L198 220 L190 231 Z" fill="#040605" opacity=".9"/>';
+  if(c.shadows>=2)sh+='<path d="M92 203 L104 203 L2 220 L10 231 Z" fill="#040605" opacity=".9"/>';
+  const f=c.female;
+  const hair=f?`<path d="M74 80 Q72 46 100 46 Q128 46 126 80 L130 118 L116 112 L116 82 Q100 60 84 82 L84 112 L70 118 Z" fill="${c.hair}"/>`
+            :`<path d="M76 74 Q78 48 100 48 Q122 48 124 74 Q112 60 100 60 Q88 60 76 74Z" fill="${c.hair}"/>`;
+  const hat=c.hat?`<path d="M74 68 Q76 38 100 38 Q124 38 126 68 Z" fill="${c.hatc}"/><rect x="72" y="64" width="56" height="9" rx="3" fill="${c.hatc}"/>`:'';
+  const scarf=c.scarf?`<rect x="80" y="98" width="40" height="13" rx="6" fill="${c.scarfc}"/>`:'';
+  const body=c.sprite
+   ? `<image href="${c.sprite}" x="28" y="18" width="144" height="220" preserveAspectRatio="xMidYMax meet"/>`
+   : `<rect x="82" y="228" width="14" height="10" fill="#111"/><rect x="104" y="228" width="14" height="10" fill="#111"/>
+<path d="M60 232 L66 120 Q100 104 134 120 L140 232 Z" fill="${c.coat}"/>
+<path d="M100 112 L100 232" stroke="rgba(0,0,0,.35)" stroke-width="2"/>
+<rect x="92" y="94" width="16" height="20" fill="${c.skin}"/>
+<circle cx="100" cy="76" r="25" fill="${c.skin}"/>
+${hair}${hat}${scarf}
+<circle cx="91" cy="78" r="2.4" fill="#1a1410"/><circle cx="109" cy="78" r="2.4" fill="#1a1410"/>
+<path d="M93 90 Q100 94 107 90" stroke="#4a2a20" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  return `<svg viewBox="0 0 200 270" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Посетитель. Теней на полу: ${c.shadows}">
+<defs>
+<linearGradient id="fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a7a72"/><stop offset="1" stop-color="#2c3732"/></linearGradient>
+<radialGradient id="pool"><stop offset="0" stop-color="#ffe3a0" stop-opacity=".7"/><stop offset="1" stop-color="#ffe3a0" stop-opacity="0"/></radialGradient>
+<linearGradient id="beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1c8" stop-opacity=".5"/><stop offset="1" stop-color="#fff1c8" stop-opacity="0"/></linearGradient>
+<radialGradient id="glow"><stop offset="0" stop-color="#fff6d8" stop-opacity="1"/><stop offset=".35" stop-color="#ffd27a" stop-opacity=".6"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient>
+</defs>
+${customBg?'':'<rect width="200" height="270" fill="#0f1513"/>'}
+<path d="M20 20 L-30 194 L110 194 Z" fill="url(#beam)"/><path d="M180 20 L90 194 L230 194 Z" fill="url(#beam)"/>
+${customBg?'':'<rect y="193" width="200" height="77" fill="url(#fl)"/><rect y="193" width="200" height="1.5" fill="#8fa198"/>'}
+<ellipse cx="46" cy="214" rx="70" ry="16" fill="url(#pool)"/><ellipse cx="154" cy="214" rx="70" ry="16" fill="url(#pool)"/>
+${sh}
+<g transform="translate(0 -33)"><g transform="translate(100 238) scale(${k}) translate(-100 -238)">${body}</g></g>
+<circle cx="20" cy="16" r="40" fill="url(#glow)"/><circle cx="180" cy="16" r="40" fill="url(#glow)"/>
+<rect x="8" y="2" width="24" height="7" rx="2" fill="#2a332f"/><rect x="168" y="2" width="24" height="7" rx="2" fill="#2a332f"/>
+<circle cx="20" cy="14" r="6" fill="#fffbe6"/><circle cx="180" cy="14" r="6" fill="#fffbe6"/>
+</svg>`;
+}
+function boothHTML(c,plate){
+  const custom=!!ART.bg,ar=ART.view&&ART.viewRatio?ART.viewRatio:.8;
+  return `<section class="booth" style="--ar:${ar};--cs:${(ART.charScale||100)/100};--cy:${ART.charY||0}">
+  <div class="bgimg ${custom?'custom':''}" style="background-image:url(${ART.bg||IMG.STREET})"></div>
+  <div class="chars">${portrait(c,custom)}</div>
+  ${ART.view?`<img class="fg" src="${ART.view}" alt="">`:'<div class="fgdesk"></div>'}
+  <div class="scan"></div>${plate||''}</section>`;
+}
+
+/* ---------- состояние ---------- */
+let S,sh;
+function newGame(){S={seed:Math.floor(Math.random()*1e6),day:0,money:40,trust:3,innocents:0,absCaught:0,incidents:0,
+  cold:0,hungry:0,momPaid:0,momMissed:0,free:CONFIG.freeErrors[0],morn:null,antonStopped:0,antonPassed:0}}
+newGame();
+function saveArt(){return DB.set('art',ART)}
+
+/* ---------- заставка и мастерская ---------- */
+function title(){
+  newGame();Snd.ambient('off');
+    app.innerHTML=`<div class="screen">
+  <div class="hero" style="background-image:url(${ART.bg||IMG.STREET})"><div class="in">
+   <div class="sub">Декабрь 2004. Санкт-Петербург</div>
+   <h1>Смена<br>в «Дисководе»</h1>
+   <p style="max-width:560px">Ты Никита Корнеев. Днём охраняешь магазин дисков и игр в торговом центре. Вечером докладываешь Всемирной организации по защите разума. В толпе у выхода ходит Абсолют, который не знает, что вокруг него живые люди.</p>
+   <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="go">Начать</button><button class="btn ghost" id="mu">Звук: ${Snd.muted?'выкл':'вкл'}</button></div>
+   <div class="small">Прототип. Звук включится после нажатия «Начать».</div>${PROBLEMS.length?`<div class="inc"><b>Проверьте assets.js:</b><br>${PROBLEMS.map(esc).join("<br>")}</div>`:""}
+  </div></div></div>`;
+  $('#go').onclick=()=>{Snd.play('door');brief(1)};
+  $('#mu').onclick=()=>{Snd.toggle();DB.set('mute',Snd.muted);title()};
+}
+function overlay(html,wide){
+  const o=document.createElement('div');o.className='ov';o.innerHTML=`<div class="box ${wide?'wide':''}"><button class="x">Закрыть</button>${html}</div>`;
+  o.onclick=e=>{if(e.target===o||e.target.classList.contains('x')){o.remove();if(o._onclose)o._onclose()}};
+  document.body.appendChild(o);o.querySelector('.x').focus();return o;
+}
+/* ---------- памятка ---------- */
+function memoHTML(day){
+  let h='<div class="rules memo"><h3>Памятка охранника «Дисковода»</h3>';
+  h+='<h4>Люди</h4><ul><li>Гордый обижается на недоверие: говори вежливо и объясняй правила.</li><li>Наглый уважает только твёрдость: требуй без извинений.</li><li>Пугливый боится самого факта проверки: успокой и пошути.</li><li>Две неудачные попытки подряд, и человек откажется. Это жалоба и нарушение.</li></ul>';
+  if(day>=CONFIG.unlock.doc){
+    const r=rng(5),c={name:'Сергей Орлов',role:'x'};
+    h+='<h4>Как понять фальшивый документ</h4><ul><li>Паспорт выдают с 14 лет. Если дата выдачи раньше 14-летия, это подделка.</li><li>Печать должна быть чёткой. Смазанная или отсутствующая означает подделку.</li><li>Опечатка в названии («ПАСПОРГ», «СТУДЕНЧЕКИЙ») означает подделку.</li><li>Студенческий действителен до 06.2005. Просроченный не годится.</li><li>Возраст по документу должен сходиться с «на вид». Подросток не бывает 25-летним.</li></ul>';
+    h+=`<div class="doc pdoc" style="max-width:300px;margin-top:6px"><h4>Образец настоящего</h4>${docHTML(mkDoc(r,c,false,30))}</div>`;
+  }
+  if(day>=CONFIG.unlock.money){
+    h+='<h4>Как понять фальшивую купюру</h4><ul><li>Номер сверху и снизу должен совпадать.</li><li>На просвет виден водяной знак (портрет).</li><li>Защитная нить прощупывается и поблёскивает.</li><li>Краска чёткая и не пачкает пальцы.</li><li>Достаточно одного расхождения.</li></ul>';
+  }
+  return h+'</div>';
+}
+
+/* ---------- утро и смена ---------- */
+function brief(n){
+  S.day=n;const d=DAYS[n-1];
+  Snd.ambient('off');Snd.play('pager');
+  let morn='';
+  if(S.morn)morn=`<div class="morn">${S.morn.img?`<div class="strip" style="background-image:url(${S.morn.img})"></div>`:''}${S.morn.lines.map(l=>`<p>${l}</p>`).join('')}<div class="free">Бесплатных нарушений сегодня: ${S.free}</div></div>`;
+  app.innerHTML=`<div class="screen">
+   <div class="dayhead"><div class="date">${d.date}</div><h2>${d.title}</h2></div>
+   ${morn}
+   <div class="brief">
+    <div class="pager"><div class="hd"><span>ПЕЙДЖЕР ВОЗР</span><span>05:52</span></div>${d.pager.map(p=>`<p>${p}</p>`).join('')}<p>— О.</p></div>
+    <div class="rules"><h3>Правила на смену</h3><ul>${d.rules.map(x=>`<li>${x}</li>`).join('')}</ul><p class="small" style="color:#6b5f3e;margin-top:8px">Штраф за лишнее нарушение сегодня: ${CONFIG.penalty[n-1]} р.</p></div>
+   </div>
+   <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="go">Выйти на смену</button><button class="btn ghost" id="memo">Памятка</button><button class="btn ghost" id="poster">Плакат ВОЗР</button></div>
+  </div>`;
+  $('#go').onclick=()=>startShift(n);
+  $('#memo').onclick=()=>overlay(memoHTML(n));
+  $('#poster').onclick=()=>overlay(`<img src="${IMG.POSTER}" alt="Плакат ВОЗР: как правильно обращаться с абсолютами">`);
+}
+function startShift(n){
+  sh={day:n,q:buildQueue(n),i:0,clock:900,charges:n>=2?2:0,errors:0,free:S.free,absMissed:false,absCaught:false,decided:false,innocentToday:false,antonStop:false,antonPass:false};
+  Snd.ambient('mall');
+  nextCustomer();
+}
+function hud(){
+  const over=sh.errors>sh.free;
+  return `<div class="hud"><span>${DAYS[sh.day-1].title.split(' · ')[0]}</span><span class="clock">${fmt(sh.clock)}</span>
+  <span>Пейджер: ${sh.day>=2?sh.charges:'—'}</span><span class="${over?'bad':''}">Нарушения: ${sh.errors} (бесплатно ${sh.free}, потом ${CONFIG.penalty[sh.day-1]} р.)</span><span>${S.money} р.</span><span class="sp"></span>
+  <button id="memo">Правила</button><button id="memo2">Памятка</button><button id="mu">Звук: ${Snd.muted?'выкл':'вкл'}</button></div>`;
+}
+function nextCustomer(){
+  if(sh.i>=sh.q.length||sh.clock>=1200){
+    for(let j=sh.i;j<sh.q.length;j++)if(sh.q[j].role==='abs')sh.absMissed=true;
+    return endShift(sh.i<sh.q.length);
+  }
+  sh.cur=sh.q[sh.i];sh.decided=false;sh.clock+=CONFIG.clockStep;
+  const c=sh.cur;c.entry=sh.clock-c.eo;c.rt=c.timeBad?c.entry-(2+c.ro%4):c.entry+c.ro;
+  Snd.play('door');draw();
+}
+const needMoney=c=>sh.day>=CONFIG.unlock.money&&c.total>CONFIG.bigCheck;
+function gate(c){
+  if(sh.day>=CONFIG.mandatory.doc&&!(c.st.doc==='open'||c.st.doc==='refused'))return 'Начальство ввело правило: сначала документ.';
+  if(sh.day>=CONFIG.mandatory.money){
+    if(!c.shown.rc)return 'Сначала чек: нужно знать сумму.';
+    if(needMoney(c)&&!c.moneyChecked)return 'Покупка больше 1000 р.: сначала проверь купюру.';
+  }
+  return '';
+}
+function ask(k){const c=sh.cur;if(c.shown[k])return;c.shown[k]=true;sh.clock+=1;Snd.play(k==='cam'?'blip':'paper');draw()}
+function checkMoney(){const c=sh.cur;if(c.moneyChecked)return;c.moneyChecked=true;sh.clock+=2;Snd.play('paper');draw()}
+function askItem(kind){
+  const c=sh.cur;sh.clock+=kind==='doc'?1:3;
+  if(c.tp[kind]==='calm'){c.st[kind]='open';c.ol[kind]=kind==='doc'?c.calmDoc:c.calmBag;Snd.play(kind==='doc'?'paper':'zip')}
+  else{c.st[kind]='dialog';c.dk=kind}
+  draw();
+}
+function approach(k){
+  const c=sh.cur,kind=c.dk,T=TEMPER[c.tp[kind]];
+  if(T.right===k){c.st[kind]='open';c.ol[kind]=T[kind].ok;sh.clock+=1;Snd.play('ok')}
+  else{c.wr[kind]++;sh.clock+=3;c.react=T.wrong[c.wr[kind]-1]||T.wrong[0];Snd.play('buzz');
+    if(c.wr[kind]>=2){c.st[kind]='refused';sh.errors++;S.errTotal=(S.errTotal||0)+1}}
+  draw();
+}
+function draw(){
+  const c=sh.cur,now=sh.clock,U=CONFIG.unlock;
+  const btn=(attrs,t,min)=>`<button class="ask" ${attrs}>${t} · ${min} мин</button>`;
+  let cards='';
+  if(sh.day>=U.doc){
+    const s=c.st.doc;
+    cards+=s==='open'?`<div class="doc pdoc"><h4>Документ</h4><div class="small" style="color:#6b5f3e">${c.ol.doc}</div>${docHTML(c.doc)}</div>`
+      :s==='dialog'?`<div class="doc"><h4>Документ</h4><div>Идёт разговор.</div></div>`
+      :s==='refused'?`<div class="doc"><h4>Документ</h4><div>Отказался показывать. Администратор записал жалобу.</div></div>`
+      :`<div class="doc empty"><h4>Документ${sh.day>=CONFIG.mandatory.doc?' (обязательно)':''}</h4>${btn('data-doc="1"','Попросить документ',1)}</div>`;
+  }
+  cards+=c.shown.rc?(c.role==='anton'?`<div class="doc rc"><h4>Чек</h4><div>Чека нет.</div></div>`:
+    `<div class="doc rc"><h4>Чек № ${1000+sh.i*37+sh.day*11}</h4>${c.items.map(i=>`<div class="ln"><span>${i.t}</span><span>${i.p}</span></div>`).join('')}<div class="ln tot"><span>ИТОГО</span><span>${c.total}</span></div><div class="ln"><span>Время</span><span>${fmt(c.rt)}</span></div></div>`)
+    :`<div class="doc empty"><h4>Чек</h4>${btn('data-ask="rc"','Попросить чек',1)}</div>`;
+  if(sh.day>=U.cam)cards+=c.shown.cam?`<div class="doc cam"><h4>Запись камеры у входа</h4><div>Вход: ${fmt(c.entry)}</div><div>Сейчас: ${fmt(now)}</div></div>`
+    :`<div class="doc empty"><h4>Камера у входа</h4>${btn('data-ask="cam"','Перемотать запись',1)}</div>`;
+  {const s=c.st.bag;
+   cards+=s==='open'?`<div class="doc"><h4>Сумка</h4><div class="small" style="color:#6b5f3e">${c.ol.bag}</div><ul>${c.bag.map(i=>`<li>${i.t}</li>`).join('')||'<li>Пусто</li>'}</ul></div>`
+    :s==='dialog'?`<div class="doc"><h4>Сумка</h4><div>Идёт разговор.</div></div>`
+    :s==='refused'?`<div class="doc"><h4>Сумка</h4><div>Отказался показывать. Администратор записал жалобу.</div></div>`
+    :`<div class="doc empty"><h4>Сумка</h4>${btn('data-bag="1"','Попросить показать',3)}</div>`}
+  if(c.shown.rc&&needMoney(c)&&c.bill){
+    cards+=c.moneyChecked?`<div class="doc bill"><h4>Купюра из лотка кассы</h4><div>Номинал: ${c.bill.nom} р.</div><div>Номер сверху: ${c.bill.top}</div><div>Номер снизу: ${c.bill.bottom}</div><div>Водяной знак: ${c.bill.wm}</div><div>Защитная нить: ${c.bill.thread}</div><div>Краска: ${c.bill.ink}</div></div>`
+      :`<div class="doc empty"><h4>Оплата больше ${CONFIG.bigCheck} р.</h4>${btn('data-money="1"','Проверить купюру',2)}</div>`;
+  }
+  const lookTxt=`На вид около ${c.look} лет.`;
+  const nameShown=(sh.day>=U.doc&&c.st.doc==='open')?c.name:'Посетитель';
+  app.innerHTML=`${hud()}
+  <div class="stage">
+   ${boothHTML(c,`<div class="plate"><span>${esc(nameShown)}</span><span class="q">${sh.i+1} из ${sh.q.length}</span></div>`)}
+   <section class="desk">
+     ${cards}
+     <div class="doc note wide"><h4>Что ты видишь</h4><div>${lookTxt} ${c.note}</div></div>
+   </section>
+  </div>
+  <div id="bottom"></div>`;
+  $('#memo').onclick=()=>{const d=DAYS[sh.day-1];overlay(`<div class="rules"><h3>Правила на ${d.date.split(',')[0].toLowerCase()}</h3><ul>${d.rules.map(x=>`<li>${x}</li>`).join('')}</ul></div>`)};
+  $('#memo2').onclick=()=>overlay(memoHTML(sh.day));
+  $('#mu').onclick=()=>{Snd.toggle();DB.set('mute',Snd.muted);draw()};
+  document.querySelectorAll('[data-ask]').forEach(b=>b.onclick=()=>ask(b.dataset.ask));
+  const bd=document.querySelector('[data-bag]');if(bd)bd.onclick=()=>askItem('bag');
+  const dd=document.querySelector('[data-doc]');if(dd)dd.onclick=()=>askItem('doc');
+  const mm=document.querySelector('[data-money]');if(mm)mm.onclick=checkMoney;
+  if(c.st.doc==='dialog'||c.st.bag==='dialog')dialog();else actions();
+}
+function dialog(){
+  const c=sh.cur,kind=c.dk,T=TEMPER[c.tp[kind]];
+  const say=c.wr[kind]?c.react:T[kind].start[c.tl[kind]];
+  $('#bottom').innerHTML=`<div class="dialog"><div class="say">${say}</div><div class="small">Как ты поступишь?</div>
+   <div class="opts">${APPROACH.map(a=>`<button data-ap="${a[0]}">${a[1]}</button>`).join('')}</div></div>`;
+  document.querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>approach(b.dataset.ap));
+}
+function actions(){
+  const g=gate(sh.cur),off=g?'disabled':'';
+  $('#bottom').innerHTML=`${g?`<div class="gate">${g}</div>`:''}<div class="acts">
+   <button class="pass" id="a-pass" ${off}>Пропустить</button>
+   <button class="stop" id="a-stop" ${off}>Остановить<small>вызвать администратора</small></button>
+   <button class="rep" id="a-rep" ${off||sh.charges<1?'disabled':''}>Пейджер ВОЗР<small>${sh.day<2?'пока не нужен':'осталось '+sh.charges}</small></button>
+  </div>`;
+  if(!g){$('#a-pass').onclick=()=>decide('pass');$('#a-stop').onclick=()=>decide('stop');
+    const rp=$('#a-rep');if(rp&&!rp.disabled)rp.onclick=()=>decide('report')}
+}
+const VMSG={
+ theft:{pass:"Через минуту кассир ловит недостачу: в сумке лежало то, чего нет в чеке. Администратор смотрит на тебя.",stop:"Администратор находит лишний диск. Покупатель мнётся, платит. Магазин доволен."},
+ underage:{pass:"Школьник уходит с игрой 18+. Через час звонит чья-то мама.",stop:"Продавец отбирает игру. Школьник уходит, бурча: «Это брат сказал, что можно»."},
+ forged:{pass:"Ты возвращаешь поддельный документ владельцу и пропускаешь его. К вечеру выясняется: бланк краденый, и милиция уже спрашивает про тебя.",stop:"Ты называешь администратору дефект. Тот вызывает милицию, а человек пытается уйти через склад."},
+ counterfeit:{pass:"Кассир найдёт фальшивую купюру только вечером, когда не сойдётся касса. Недостачу вычтут из зарплаты охраны.",stop:"Администратор смотрит купюру на просвет и кивает. Покупателя просят пройти в кабинет. Он бледнеет."}
+};
+function decide(a){
+  if(sh.decided)return;sh.decided=true;
+  const c=sh.cur;let ok=true,txt='',neutral=false;
+  const err=t=>{ok=false;sh.errors++;S.errTotal=(S.errTotal||0)+1;txt=t};
+  const A=c.role==='anton',V=c.violation&&VMSG[c.violation];
+  if(a==='pass'){
+    if(A){S.antonPassed++;sh.antonPass=true;err("Антон уходит, и куртка у него топорщится. Через час на полке стоит пустая коробка Half-Life 2, а на кафеле рядом капля соуса.")}
+    else if(V)err(V.pass);
+    else if(c.role==='abs'){sh.absMissed=true;neutral=true;txt="Он проходит мимо. Ровно, без остановок. Ты не оборачиваешься."}
+    else txt="Проходит. Дверь хлопает, пахнет мокрой шерстью.";
+  }else if(a==='stop'){
+    if(A){S.antonStopped++;sh.antonStop=true;txt="Антон молча достаёт Half-Life 2 из куртки и кладёт на стойку. «Мне он не нужен. Просто хотелось, чтобы хоть что-то хотелось». Он уходит доедать шаурму."}
+    else if(V)txt=V.stop;
+    else if(c.role==='abs'){sh.absMissed=true;err("Ты останавливаешь его. Он смотрит на тебя и спокойно ждёт, пока ты его отпустишь. Ты теряешь пять минут.");sh.clock+=5}
+    else err("Ты останавливаешь невиновного. Он возмущённо жалуется администратору и уходит, хлопнув дверью.");
+  }else{
+    sh.charges--;
+    if(c.role==='abs'){sh.absCaught=true;S.absCaught++;txt="Ты нажимаешь кнопку. Через две минуты у выхода двое в синих галстуках: «Гражданин, пройдёмте». Он идёт, не споря, ровно по прямой. Пейджер: «Цель подтверждена»."}
+    else{S.innocents++;sh.innocentToday=true;ok=false;txt=A?"Пейджер: «Антон Авдеев? Проверили. Чисто. Запиши, как он выглядит». Его уводят под руки, он жуёт шаурму и смотрит в одну точку. Диск остаётся у него в куртке.":"Двое в синих галстуках уводят его. Он оборачивается и смотрит на тебя. Через час его куртка висит на спинке скамейки у фуд-корта. Пейджер: «Чисто. Бывает»."}
+  }
+  Snd.play(a==='pass'?(ok||neutral?'door':'buzz'):a==='stop'?(ok?'stamp':'buzz'):'pager');
+  if(ok&&!neutral&&a!=='pass')setTimeout(()=>Snd.play('ding'),180);
+  const cls=neutral?'':(ok?'ok':'bad');
+  const head=neutral?'Он прошёл.':(ok?'Верно.':(a==='report'?'Невиновный.':'Ошибка.'));
+  $('#bottom').innerHTML=`<div class="verdict ${cls}"><b>${head}</b><div>${txt}</div><button class="btn" id="next">Следующий</button></div>`;
+  $('#next').focus();$('#next').onclick=()=>{sh.i++;nextCustomer()};
+}
+
+/* ---------- сцены конца смены ---------- */
+function condOk(k){
+  switch(k){
+   case'always':return true;case'caught':return sh.absCaught;case'missed':return sh.absMissed&&sh.day>=2;
+   case'errors':return sh.errors>sh.free;case'noerr':return sh.errors===0;case'innocent':return sh.innocentToday;
+   case'anton_stop':return sh.antonStop;case'anton_pass':return sh.antonPass;
+  }return false;
+}
+function parseLines(t){return String(t||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const i=l.indexOf(':');return i>0&&i<30?{who:l.slice(0,i).trim(),text:l.slice(i+1).trim()}:{who:'',text:l}})}
+function playScenes(list,done){
+  const lines=[];list.forEach(s=>parseLines(s.text).forEach((l,i)=>lines.push({...l,first:i===0})));
+  let k=0;
+  const step=()=>{
+    if(k>=lines.length)return done();
+    const ln=lines[k++];if(ln.first)Snd.play('pager');
+    app.innerHTML=`<div class="screen"><div class="scene">${ln.who?`<div class="who">${esc(ln.who)}</div>`:''}<div class="txt">${esc(ln.text)}</div><button class="btn" id="nx">${k<lines.length?'Дальше':'Закончить смену'}</button></div></div>`;
+    $('#nx').focus();$('#nx').onclick=step;
+  };
+  step();
+}
+
+/* ---------- конец смены, вечер ---------- */
+function endShift(cut){
+  const d=DAYS[sh.day-1],di=sh.day-1;
+  const over=Math.max(0,sh.errors-sh.free);
+  const pen=over*CONFIG.penalty[di];
+  const bonus=sh.absCaught?15:0;
+  const incPen=sh.absMissed&&sh.day>=2?CONFIG.incident[di]:0;
+  const warn=over>=CONFIG.warnOver[di];
+  if(incPen){S.incidents++;S.trust--}
+  if(warn)S.trust--;
+  const wage=CONFIG.wage[di],rent=CONFIG.rent;
+  S.money=Math.max(0,S.money+wage-pen+bonus-incPen-rent);
+  Snd.ambient('off');
+  const scenes=(DIALOGS||[]).filter(s=>(+s.day===0||+s.day===sh.day)&&condOk(s.cond));
+  playScenes(scenes,()=>ledger(d,cut,over,pen,bonus,incPen,warn,wage,rent));
+}
+function ledger(d,cut,over,pen,bonus,incPen,warn,wage,rent){
+  Snd.ambient('room');Snd.play('ding');
+  const base=S.money,pick={heat:false,food:false,mom:false};
+  app.innerHTML=`<div class="screen">
+   <div class="hero" style="background-image:url(${IMG.ROOM})"><div class="in" style="min-height:300px">
+    <div class="sub">${d.date.split(',')[0]}. Вечер.</div>
+    <div class="news">${d.tv}</div>
+   </div></div>
+   ${cut?`<p class="small">Смена закончилась раньше, чем ты успел посмотреть всех. Остальные ушли сами.</p>`:''}
+   ${incPen?`<div class="inc"><b>Происшествие.</b> ${d.inc}<br>Орлова: «Ты его видел».</div>`:(sh.day>=2&&sh.absCaught?`<div class="news">Орлова: «Сегодня чисто. Но он где-то ходит ещё».</div>`:'')}
+   ${warn?`<div class="inc"><b>Выговор.</b> Слишком много нарушений за смену. Доверие ВОЗР падает.</div>`:''}
+   <div class="ledger">
+     <div class="ln"><span>Зарплата</span><span>+${wage}</span></div>
+     ${pen?`<div class="ln"><span>Штраф (${over} × ${CONFIG.penalty[sh.day-1]})</span><span>−${pen}</span></div>`:''}
+     ${bonus?`<div class="ln"><span>Премия ВОЗР</span><span>+${bonus}</span></div>`:''}
+     ${incPen?`<div class="ln"><span>Премия снята</span><span>−${incPen}</span></div>`:''}
+     <div class="ln"><span>Аренда</span><span>−${rent}</span></div>
+     <div class="ln tot"><span>Остаток</span><span id="mny">${S.money} р.</span></div>
+   </div>
+   <div><h3 style="margin-bottom:4px">На что потратишь вечер?</h3><div class="small">Завтрашнее утро зависит от этого.</div><div class="choice" id="ch"></div></div>
+   <button class="btn" id="sleep">Лечь спать</button>
+  </div>`;
+  const opts=[["heat","Включить обогреватель",10],["food","Шаурма и горячий чай",10],["mom","Позвонить маме и отправить на лекарства",15]];
+  function paint(){
+    const spent=opts.reduce((a,o)=>a+(pick[o[0]]?o[2]:0),0);
+    $('#ch').innerHTML=opts.map(o=>`<button data-k="${o[0]}" class="${pick[o[0]]?'on':''}" ${!pick[o[0]]&&spent+o[2]>base?'disabled':''}>${o[1]} · ${o[2]} р.</button>`).join('');
+    $('#mny').textContent=(base-spent)+' р.';
+    $('#ch').querySelectorAll('button').forEach(b=>b.onclick=()=>{pick[b.dataset.k]=!pick[b.dataset.k];paint()});
+  }
+  paint();
+  $('#sleep').onclick=()=>{
+    const spent=opts.reduce((a,o)=>a+(pick[o[0]]?o[2]:0),0);S.money=base-spent;
+    if(sh.day>=5||S.trust<=0)return ending();
+    const lines=[];let img=IMG.ROOM;
+    if(pick.heat)lines.push(S.cold?"В комнате тепло, хотя вчера было иначе. Ты наконец отогрелся.":"В комнате тепло, телевизор тихо шумит.");
+    else{S.cold++;lines.push(S.cold===1?"Ночью комната остыла. Утром ломит виски.":S.cold===2?"Ты спал в куртке. Горло першит, пальцы плохо слушаются.":"Ты проснулся с температурой. Всё вокруг плывёт, как на ЭЛТ-мониторе.")}
+    if(pick.food){lines.push("Шаурма и чай со вчерашнего вечера ещё держат. Голова ясная.");img=IMG.FOOD}
+    else{S.hungry++;lines.push("Желудок сводит. Ты заедаешь день сухарями.")}
+    if(pick.mom){S.momPaid++;lines.push("Мама позвонила в семь: «Нашла лекарства. Не волнуйся».")}
+    else{S.momMissed++;lines.push(S.momMissed===1?"Телефон молчит. Мама не звонила.":S.momMissed===2?"Позвонила соседка: маме хуже, но скорую пока не вызывали.":"Соседка сообщает, что маму увезли в больницу. Ждёт тебя.")}
+    const good=pick.heat&&pick.food&&pick.mom;
+    S.free=Math.max(0,CONFIG.freeErrors[sh.day]+(good?1:0)-(pick.heat?0:1)-(pick.food?0:1)-(S.cold>=3?1:0));
+    S.morn={lines,img};
+    brief(sh.day+1);
+  };
+}
+
+function ending(){
+  Snd.ambient('off');
+  const mom=S.momMissed>=3?"<p>Мама уже три дня не берёт трубку. Ты решаешь, что это просто линия.</p>":"";
+  const antonLine=S.antonStopped>0&&S.antonPassed===0?"<p>Парень с шаурмой больше не приходил. Ты иногда ловишь себя на мысли, что хочешь знать, что с ним.</p>":(S.antonPassed>0?"<p>Пустая коробка из-под Half-Life 2 так и осталась на полке. Ты почему-то не стал её убирать.</p>":"");
+  const quote="«Мы привыкли считать Абсолютов воплощениями человеческих идей. Мы изучаем их, классифицируем, присваиваем номера и определяем уровень угрозы. Но что, если идеи не порождают Абсолютов?»";
+  let t,body;
+  if(S.trust<=0){t="Расчёт";body=`<p>Администратор выдаёт тебе трудовую книжку. Орлова на другом конце пейджера молчит, а потом пишет: «Жаль. Ты не справился с маршрутом».</p><p>Ты выходишь на Невский. Фонари зажигаются по очереди, как включённые кем-то по плану.</p>`}
+  else if(S.cold>=3){t="Температура";body=`<p>К пятнице ты почти не стоишь на ногах. Администратор отправляет тебя домой, на твоё место ставят нового. Орлова пишет: «Выздоравливай. Список наблюдения не прерывается».</p><p>Ты лежишь в комнате с телевизором. Из экрана на тебя смотрит человек в тёмном пиджаке и поднимает ладонь. Ты поднимаешь свою в ответ и засыпаешь.</p>`}
+  else if(S.momMissed>=3){t="Тверь";body=`<p>Ты не дожидаешься конца смены. Берёшь билет на ночной поезд и едешь к маме. Орлова присылает на пейджер одно слово: «Понимаю».</p><p>В вагоне ты впервые за неделю замечаешь, что тебе нечего считать, ни теней, ни времени на чеках.</p>`}
+  else if(S.absCaught>=3&&S.innocents<=1){t="Чистый маршрут";body=`<p>Орлова встречает тебя у служебного входа. «Ни разу не свернул. Образцово». Она улыбается и жмёт тебе руку.</p><p>По дороге к метро ты идёшь под фонарями и замечаешь, что тень под ногами одна. Одна. Может, лампы. Может, угол. Ты не оборачиваешься, чтобы проверить.</p><p>Ты идёшь ровно, по прямой, и тебе вдруг очень спокойно.</p>`}
+  else if(S.innocents>=3){t="Лишние люди";body=`<p>Орлова довольна: «Протокол соблюдён». Но ты помнишь куртки на скамейках у фуд-корта: ${S.innocents} штуки.</p><p>Ты не знаешь, кто возложит цветы на тех, кого ты назвал.</p>`}
+  else if(S.absCaught<=1){t="Недосмотр";body=`<p>Абсолют не нашёл ни одного препятствия и ушёл по своему маршруту. В отчёте ВОЗР ты пока «слабое звено». Орлова не ругается: «Он просто был быстрее нас всех».</p><p>В атриуме по вечерам теперь странно тихо. Никто не помнит, когда это началось.</p>`}
+  else if(S.momMissed===0&&S.cold===0&&S.hungry<=1){t="Две тени";body=`<p>Ты отказываешься продлевать договор. Орлова не спорит: «Ты слишком живой для маршрута».</p><p>Вечером в тёплой комнате ты звонишь маме. На стене горит одна лампа, и у тебя на полу две тени. Ты долго на них смотришь, а потом смеёшься, сам не зная чему.</p>`}
+  else{t="Обычный охранник";body=`<p>Ты нашёл не всех, но и не перегнул. Орлова коротко кивает: «Подпишешь продление».</p><p>Идёшь домой по Невскому. Под каждым фонарём у тебя по две тени, и ты нарочно задерживаешься, чтобы посчитать.</p>`}
+  app.innerHTML=`<div class="screen end">
+   <div class="hero" style="background-image:url(${IMG.MEMORIAL})"><div class="in" style="min-height:300px"><div class="sub">Конец прототипа</div><h2>${t}</h2></div></div>
+   <div style="max-width:640px">${body}${mom}${antonLine}</div>
+   <div class="q">${quote}</div>
+   <p class="small">Пойманных Абсолютов: ${S.absCaught}. Невиновных: ${S.innocents}. Пропущенных инцидентов: ${S.incidents}. Ночей без отопления: ${S.cold}.</p>
+   <button class="btn" id="again">Сыграть заново</button>
+  </div>`;
+  $('#again').onclick=title;
+}
+
+/* ---------- запуск ---------- */
+function preload(path){return new Promise(res=>{const im=new Image();im.onload=()=>res({ok:true,w:im.naturalWidth,h:im.naturalHeight});im.onerror=()=>res({ok:false});im.src=path})}
+(async()=>{
+  try{const m=await DB.get('mute');Snd.setMuted(!!m)}catch(e){}
+  Snd.setCustom(SOUNDS);
+  if(SKIPPED>0)PROBLEMS.push('Пропущено персонажей: '+SKIPPED+'. У каждого нужны file, gender ("m" или "f") и age (число).');
+  const jobs=[];
+  if(ART.bg)jobs.push(preload(ART.bg).then(r=>{if(!r.ok){PROBLEMS.push('Не найден фон: '+A.background);ART.bg=null}}));
+  if(ART.view)jobs.push(preload(ART.view).then(r=>{if(!r.ok){PROBLEMS.push('Не найден стол: '+A.desk);ART.view=null}else if(!ART.viewRatio)ART.viewRatio=+(r.w/r.h).toFixed(3)}));
+  if(ANTON)jobs.push(preload(enc(ANTON.file)).then(r=>{if(!r.ok){PROBLEMS.push('Не найден Антон: '+ANTON.file);ANTON=null}}));
+  NPCS.slice().forEach(n=>jobs.push(preload(enc(n.file)).then(r=>{if(!r.ok){PROBLEMS.push('Не найден персонаж: '+n.file);const k=NPCS.indexOf(n);if(k>=0)NPCS.splice(k,1)}})));
+  await Promise.all(jobs);
+  title();
+})();
+</script>
+</body>
+</html>
