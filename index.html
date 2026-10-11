@@ -133,15 +133,17 @@ p{margin:0 0 .8em}
 .free{font-family:var(--head);font-size:18px;color:var(--lamp)}
 
 .stage{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
-@media(min-width:900px){.stage{grid-template-columns:minmax(300px,.9fr) 1.1fr}}
-.booth{position:relative;aspect-ratio:var(--ar,.8);max-height:80vh;width:100%;border:1px solid var(--line);background:#000;overflow:hidden}
+@media(min-width:900px){.stage{grid-template-columns:minmax(0,1.75fr) minmax(300px,1fr);align-items:start}}
+#app:has(.stage){max-width:min(1760px,100%)}
+@media(min-width:900px){#app:has(.stage){padding-left:24px;padding-right:24px}}
+.booth{position:relative;aspect-ratio:var(--ar,.8);max-height:calc(100vh - 210px);width:100%;border:1px solid var(--line);background:#000;overflow:hidden}
 .booth .bgimg{position:absolute;inset:0;background:center/cover;filter:brightness(.55) saturate(.9);transform:scale(1.04)}
 .booth .bgimg.custom{filter:none;transform:none}
 .booth .chars{position:absolute;inset:0;transform:translateY(calc(var(--cy,0)*1%)) scale(var(--cs,1));transform-origin:50% 100%}
 .booth .chars svg{width:100%;height:100%;display:block}
 .booth .fg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
 .booth .fgdesk{position:absolute;left:0;right:0;bottom:0;height:14%;background:linear-gradient(#5a4731 0 5px,#33281c 5px 100%);border-top:2px solid #8a7452;box-shadow:0 -12px 26px rgba(0,0,0,.55)}
-.booth .dshade{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:multiply}
+.booth .dshade{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .booth .scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);pointer-events:none}
 .plate{position:absolute;left:0;right:0;top:0;background:rgba(8,12,10,.82);padding:6px 14px;font-family:var(--head);font-size:19px;display:flex;justify-content:space-between;gap:10px}
 .plate .q{color:var(--muted);font-size:15px;align-self:center;font-weight:500}
@@ -222,7 +224,7 @@ const CONFIG={
 
 /* ---------- настройки из assets.js ---------- */
 const DB={init(){return Promise.resolve()},get(k){try{return Promise.resolve(JSON.parse(localStorage.getItem('dk_'+k)))}catch(e){return Promise.resolve(null)}},set(k,v){try{localStorage.setItem('dk_'+k,JSON.stringify(v));return Promise.resolve(true)}catch(e){return Promise.resolve(false)}}};
-const ART={bg:enc(A.background)||null,view:enc(A.desk)||null,viewRatio:A.deskRatio||0,charScale:A.charScale||100,charY:A.charY||0,pShadows:2};
+const ART={bg:enc(A.background)||null,view:enc(A.desk)||null,viewShadow:enc(A.deskShadow)||null,shadowTop:A.shadowTop??66,shadowOpacity:(A.shadowOpacity??80)/100,viewRatio:A.deskRatio||0,charScale:A.charScale||100,charY:A.charY||0,pShadows:2};
 const NPCS=(A.npcs||[]).filter(n=>n&&n.file&&(n.gender==='m'||n.gender==='f')&&typeof n.age==='number');
 const SKIPPED=(A.npcs||[]).length-NPCS.length;
 let ANTON=A.anton&&A.anton.file?A.anton:null;
@@ -534,17 +536,18 @@ ${customBg?'':'<rect y="193" width="200" height="77" fill="url(#fl)"/><rect y="1
 function deskShade(c){
   const n=Math.max(0,Math.min(2,c.shadows|0));
   if(!n)return '';
-  const r='<polygon points="47,66 57,66 93,100 70,100" fill="#000"/>';
-  const l='<polygon points="43,66 53,66 30,100 7,100" fill="#000"/>';
-  return `<svg class="dshade" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><filter id="dsb" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter></defs><g filter="url(#dsb)" opacity=".62">${r}${n>=2?l:''}</g></svg>`;
+  const T=ART.shadowTop,op=ART.shadowOpacity;
+  const r=`<polygon points="46,${T} 56,${T} 97,100 66,100" fill="url(#dsg)"/>`;
+  const l=`<polygon points="44,${T} 54,${T} 34,100 3,100" fill="url(#dsg)"/>`;
+  return `<svg class="dshade" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="dsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="1"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></linearGradient><filter id="dsb" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.4"/></filter></defs><g filter="url(#dsb)" opacity="${op}">${r}${n>=2?l:''}</g></svg>`;
 }
 function boothHTML(c,plate){
   const custom=!!ART.bg,ar=ART.view&&ART.viewRatio?ART.viewRatio:.8;
   return `<section class="booth" style="--ar:${ar};--cs:${(ART.charScale||100)/100};--cy:${ART.charY||0}">
   <div class="bgimg ${custom?'custom':''}" style="background-image:url(${ART.bg||IMG.STREET})"></div>
   <div class="chars">${portrait(c,custom)}</div>
-  ${ART.view?`<img class="fg" src="${ART.view}" alt="">`:'<div class="fgdesk"></div>'}
-  ${deskShade(c)}
+  ${(()=>{const img=(c.shadows>=1&&ART.viewShadow)?ART.viewShadow:ART.view;return img?`<img class="fg" src="${img}" alt="">`:'<div class="fgdesk"></div>'})()}
+  ${ART.viewShadow?'':deskShade(c)}
   <div class="scan"></div>${plate||''}</section>`;
 }
 
@@ -768,9 +771,10 @@ function vnPortrait(name,emo){
   return null;
 }
 function vnBg(b){
-  if(!b)return VN.bg||(A.ui&&A.ui.room)||IMG.STREET;
-  if(A.ui&&A.ui[b])return A.ui[b];
-  return b;
+  const m=(VN.bg&&typeof VN.bg==='object')?VN.bg:{};
+  const def=(typeof VN.bg==='string'&&VN.bg)||m.default||(A.ui&&A.ui.room)||IMG.STREET;
+  if(!b)return def;
+  return m[b]||(A.ui&&A.ui[b])||b;
 }
 function parseLines(t){return String(t||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
   const i=l.indexOf(':');
@@ -922,6 +926,7 @@ function preload(path){return new Promise(res=>{const im=new Image();im.onload=(
   const jobs=[];
   if(ART.bg)jobs.push(preload(ART.bg).then(r=>{if(!r.ok){PROBLEMS.push('Не найден фон: '+A.background);ART.bg=null}}));
   if(ART.view)jobs.push(preload(ART.view).then(r=>{if(!r.ok){PROBLEMS.push('Не найден стол: '+A.desk);ART.view=null}else if(!ART.viewRatio)ART.viewRatio=+(r.w/r.h).toFixed(3)}));
+  if(ART.viewShadow)jobs.push(preload(ART.viewShadow).then(r=>{if(!r.ok){PROBLEMS.push('Не найден стол с тенью: '+A.deskShadow);ART.viewShadow=null}}));
   if(ANTON)jobs.push(preload(enc(ANTON.file)).then(r=>{if(!r.ok){PROBLEMS.push('Не найден Антон: '+ANTON.file);ANTON=null}}));
   NPCS.slice().forEach(n=>jobs.push(preload(enc(n.file)).then(r=>{if(!r.ok){PROBLEMS.push('Не найден персонаж: '+n.file);const k=NPCS.indexOf(n);if(k>=0)NPCS.splice(k,1)}})));
   await Promise.all(jobs);
